@@ -19,11 +19,18 @@ colors = [off, red, green, blue]
 pycom.heartbeat(False)
 
 # Initialize LoRaWAN radio
-lora = LoRa(mode=LoRa.LORAWAN)
+#lora = LoRa(mode=LoRa.LORAWAN)
+lora = LoRa(mode=LoRa.LORAWAN, region=LoRa.AU915, adr=False, tx_retries=0, device_class=LoRa.CLASS_A)
 
 # Set network keys
 app_eui = binascii.unhexlify('70B3D57ED000EF92')
 app_key = binascii.unhexlify('47D97E33D867DA5ACFE358F7BD75522B')
+
+# remove some channels
+for i in range(16, 65):
+    lora.remove_channel(i)
+for i in range(66, 72):
+    lora.remove_channel(i)
 
 # Join the network
 lora.join(activation=LoRa.OTAA, auth=(app_eui, app_key), timeout=0)
@@ -56,7 +63,7 @@ while True:
     print("Sending %.5s" % data)
     data = int (data * 100);
     # send the data over LPWAN network
-    s.send(bytes([int(data / 256), data % 256   ]))
+    s.send(bytes([int(data / 256), data % 256, colorindex   ]))
     s.settimeout(3.0) # configure a timeout value of 3 seconds
     try:
         rx_pkt = s.recv(64)   # get the packet received (if any)
